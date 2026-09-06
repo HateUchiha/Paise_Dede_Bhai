@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { BottomSheet } from "../ui/BottomSheet";
 import { SpringButton } from "../ui/SpringButton";
 import { CheckCircle2, QrCode, RefreshCw, Smartphone, Unlink } from "lucide-react";
@@ -64,9 +64,10 @@ export const WhatsAppConnectSheet = ({ isOpen, onClose, isConnected, onConnect, 
               </div>
               <div className="flex justify-between">
                 <span>Engine:</span>
-                <span className="text-zinc-300">Chrome Selenium Driver</span>
+                <span className="text-emerald-300 font-semibold">Meta WhatsApp Cloud API (1,000 Free/Mo)</span>
               </div>
             </div>
+
 
             <div className="pt-2 flex gap-3">
               <SpringButton

@@ -126,8 +126,16 @@ export default function App() {
               refreshAll();
             } else if (data.type === "whatsapp_status_changed") {
               setWhatsappConnected(data.connected);
+            } else if (data.type === "quota_updated") {
+              setMetrics((prev) => ({
+                ...prev,
+                meta_messages_quota: data.quota,
+                meta_messages_used: data.used,
+                meta_messages_remaining: data.remaining,
+              }));
             }
           } catch (err) {
+
             console.error(err);
           }
         };
@@ -397,8 +405,20 @@ export default function App() {
 
           {/* Top Actions: WhatsApp Status & SSO User Profile */}
           <div className="flex items-center gap-2.5">
+            {/* Meta WhatsApp Cloud 1,000 Free Tier Quota Counter */}
+            <div
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono text-emerald-300 shadow-sm cursor-help"
+              title="Meta WhatsApp Cloud API Free Tier: 1,000 free service messages/month per user account"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Free Quota:</span>
+              <strong className="text-white font-bold">{metrics.meta_messages_remaining ?? 1000}</strong>
+              <span className="text-zinc-500 text-[10px]">/ 1000</span>
+            </div>
+
             {/* Secure WhatsApp Login Button */}
             <button
+
               onClick={() => setShowWhatsAppModal(true)}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-medium border transition-all apple-press ${
                 whatsappConnected

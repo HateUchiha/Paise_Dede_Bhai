@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { GlassCard } from "../ui/GlassCard";
 import {
   Activity,
@@ -21,13 +21,22 @@ export const AnalyticsDashboard = ({ metrics = {}, debts = [] }) => {
     outstanding_balance = 0,
     active_sessions_count = 0,
     open_debts_count = 0,
+    meta_messages_quota = 1000,
+    meta_messages_used = 0,
+    meta_messages_remaining = 1000,
     developer = "ZQG365 Application Services",
   } = metrics;
+
+  const quotaPercent = Math.max(
+    0,
+    Math.min(100, Math.round((meta_messages_remaining / meta_messages_quota) * 100))
+  );
 
   const recoveryRate =
     total_debt_lent > 0
       ? Math.min(100, Math.round((total_debt_recovered / total_debt_lent) * 100))
       : 0;
+
 
   return (
     <div className="space-y-6">
@@ -135,6 +144,46 @@ export const AnalyticsDashboard = ({ metrics = {}, debts = [] }) => {
           </div>
         </GlassCard>
 
+        {/* Meta WhatsApp Cloud Free Tier (1,000 Quota) Card */}
+        <GlassCard className="p-5 flex flex-col justify-between space-y-3 bg-gradient-to-br from-emerald-500/[0.05] to-teal-500/[0.03] border-emerald-500/20">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 text-[10px] font-bold border border-emerald-500/20">
+                <span>💬 Meta Cloud Free Tier</span>
+              </span>
+              <span className="text-[10px] text-zinc-400 font-mono">
+                {meta_messages_used} sent
+              </span>
+            </div>
+
+            <div className="flex items-baseline justify-between mt-1">
+              <span className="text-2xl font-extrabold text-white font-mono">
+                {meta_messages_remaining}
+              </span>
+              <span className="text-xs text-zinc-400 font-medium">
+                / {meta_messages_quota} msgs left
+              </span>
+            </div>
+
+            <p className="text-[11px] text-zinc-400 mt-1 leading-relaxed">
+              Meta WhatsApp free monthly service quota. Reduces 1-by-1 per automated reminder.
+            </p>
+          </div>
+
+          <div className="space-y-1.5 pt-1">
+            <div className="w-full h-2 rounded-full bg-white/5 p-0.5 border border-white/10 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-300 transition-all duration-300"
+                style={{ width: `${quotaPercent}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-[10px] text-zinc-500 font-mono">
+              <span>{quotaPercent}% Quota Available</span>
+              <span>100% Free / Mo</span>
+            </div>
+          </div>
+        </GlassCard>
+
         {/* Developer Attribution Card */}
         <GlassCard className="p-5 flex flex-col justify-between space-y-3 bg-gradient-to-br from-white/[0.03] to-indigo-500/[0.05] border-indigo-500/20">
           <div>
@@ -155,6 +204,7 @@ export const AnalyticsDashboard = ({ metrics = {}, debts = [] }) => {
           </div>
         </GlassCard>
       </div>
+
     </div>
   );
 };

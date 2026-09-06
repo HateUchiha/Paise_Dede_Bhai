@@ -1,4 +1,4 @@
-﻿import json
+import json
 import os
 import uuid
 from datetime import datetime, date
@@ -14,8 +14,9 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from auth import create_access_token, get_current_user
-from db import get_db, init_db, upsert_user
+from db import get_db, init_db, upsert_user, get_user_quota, deduct_user_quota
 from ai_service import generate_ai_messages
+
 from whatsapp_manager import whatsapp_mgr, QR_DIR
 from session_manager import session_mgr
 
@@ -441,14 +442,24 @@ async def get_metrics(user: dict = Depends(get_current_user)):
     conn.close()
     total_lent = row["total_lent"] if row else 0.0
     total_recovered = row["total_recovered"] if row else 0.0
+    quota_info = get_user_quota(uid(user))
     return {
         "total_debt_lent": total_lent,
         "total_debt_recovered": total_recovered,
         "outstanding_balance": max(0.0, total_lent - total_recovered),
         "active_sessions_count": active_sessions,
         "open_debts_count": open_debts,
+        "meta_messages_quota": quota_info["quota"],
+        "meta_messages_used": quota_info["used"],
+        "meta_messages_remaining": quota_info["remaining"],
         "developer": "ZQG365 Application Services",
     }
+
+
+@app.get("/api/user/quota")
+async def get_my_quota(user: dict = Depends(get_current_user)):
+    return get_user_quota(uid(user))
+
 
 
 @app.get("/api/activity")

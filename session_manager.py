@@ -1,13 +1,14 @@
-﻿import asyncio
+import asyncio
 import json
 import time
 import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from db import get_db
+from db import get_db, deduct_user_quota, get_user_quota
 from intent_analyzer import analyze_incoming_reply
 from whatsapp_manager import whatsapp_mgr
+
 
 
 class SessionRunner:
@@ -85,6 +86,18 @@ class SessionRunner:
                     await self.manager.pause_session(self.session_id)
                     break
 
+                quota_info = get_user_quota(curr["user_id"])
+                if quota_info["remaining"] <= 0:
+                    conn.close()
+                    await self.manager.broadcast({
+                        "type": "quota_exhausted",
+                        "session_id": self.session_id,
+                        "user_id": curr["user_id"],
+                        "message": "Meta WhatsApp Free Tier 1,000 message limit reached."
+                    })
+                    await self.manager.pause_session(self.session_id)
+                    break
+
                 reminders_sent = curr["reminders_sent"] + 1
                 msg_idx = curr["current_msg_index"] % len(approved_msgs)
                 msg_text = approved_msgs[msg_idx]
@@ -120,6 +133,10 @@ class SessionRunner:
                     """, (qr_msg_id, self.session_id, "bot", qr_text, "qr_sent", now_str))
                     whatsapp_mgr.send_qr_image(contact_name, qr_filename)
 
+                # Deduct from user's Meta WhatsApp 1,000 message quota
+                deduct_count = 2 if (is_first and qr_filename) else 1
+                updated_quota = deduct_user_quota(curr["user_id"], deduct_count)
+
                 next_reminder_at = time.time() + interval_sec
                 cursor.execute("""
                     UPDATE reminder_sessions
@@ -129,9 +146,19 @@ class SessionRunner:
                 conn.commit()
                 conn.close()
 
+                # Broadcast real-time quota reduction
+                await self.manager.broadcast({
+                    "type": "quota_updated",
+                    "user_id": curr["user_id"],
+                    "quota": updated_quota["quota"],
+                    "used": updated_quota["used"],
+                    "remaining": updated_quota["remaining"],
+                })
+
                 await self.manager.broadcast({
                     "type": "new_message",
                     "session_id": self.session_id,
+
                     "user_id": curr["user_id"],
                     "message": {
                         "id": msg_id,

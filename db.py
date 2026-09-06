@@ -1,4 +1,4 @@
-﻿import os
+import os
 import sqlite3
 from typing import Optional
 
@@ -135,8 +135,11 @@ def init_db():
     """)
 
     _ensure_column(cursor, "users", "chrome_profile_path", "TEXT")
+    _ensure_column(cursor, "users", "meta_messages_quota", "INTEGER DEFAULT 1000")
+    _ensure_column(cursor, "users", "meta_messages_used", "INTEGER DEFAULT 0")
     _ensure_column(cursor, "debt_entries", "created_by", "TEXT")
     _ensure_column(cursor, "chat_messages", "raw_response", "TEXT")
+
 
     conn.commit()
 
@@ -222,6 +225,33 @@ def upsert_user(user_id: str, email: str, display_name: str, avatar_url: Optiona
     return row
 
 
+def get_user_quota(user_id: str) -> dict:
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT meta_messages_quota, meta_messages_used FROM users WHERE id = ?", (user_id,))
+    row = cursor.fetchone()
+    conn.close()
+    if not row:
+        return {"quota": 1000, "used": 0, "remaining": 1000}
+    quota = row["meta_messages_quota"] if row["meta_messages_quota"] is not None else 1000
+    used = row["meta_messages_used"] or 0
+    return {"quota": quota, "used": used, "remaining": max(0, quota - used)}
+
+
+def deduct_user_quota(user_id: str, count: int = 1) -> dict:
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE users 
+        SET meta_messages_used = COALESCE(meta_messages_used, 0) + ? 
+        WHERE id = ?
+    """, (count, user_id))
+    conn.commit()
+    conn.close()
+    return get_user_quota(user_id)
+
+
 if __name__ == "__main__":
     init_db()
     print("Database initialized successfully.")
+
