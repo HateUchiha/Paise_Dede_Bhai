@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { BottomSheet } from "../ui/BottomSheet";
 import { SpringButton } from "../ui/SpringButton";
 import { LogOut, ShieldCheck, UserCheck, Sparkles } from "lucide-react";
@@ -87,11 +87,17 @@ export const LoginModal = ({ isOpen, onClose, user, onLogin, onLogout }) => {
               <span>Continue with Google</span>
             </button>
 
+            <div className="flex items-center justify-center gap-1.5 text-[11px] text-zinc-500">
+              <Sparkles className="w-3 h-3 text-indigo-400" />
+              <span>Google SSO with Supabase JWT &amp; Session Guardrails</span>
+            </div>
+
             <div className="pt-2 text-[10px] text-zinc-500">
               Developed by <strong className="text-zinc-400">ZQG365 Application Services</strong>
             </div>
           </div>
         )}
+
       </div>
     </BottomSheet>
   );

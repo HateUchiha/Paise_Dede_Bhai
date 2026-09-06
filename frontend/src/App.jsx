@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AnalyticsDashboard } from "./components/dashboard/AnalyticsDashboard";
 import { MasterDebtTable } from "./components/debts/MasterDebtTable";
@@ -28,8 +28,10 @@ import {
   User,
   Users,
 } from "lucide-react";
+import { signInWithGoogle, signOutUser, subscribeToAuthChanges } from "./lib/supabase";
 
 export default function App() {
+
   const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, debts, sessions
 
   // Core Data State
@@ -84,7 +86,12 @@ export default function App() {
 
   useEffect(() => {
     refreshAll();
+    const unsubscribe = subscribeToAuthChanges(() => {
+      refreshAll();
+    });
+    return () => unsubscribe();
   }, []);
+
 
   // WebSocket Connection
   useEffect(() => {
@@ -280,9 +287,24 @@ export default function App() {
   };
 
   const handleGoogleLogin = async () => {
-    await fetch("/api/auth/login-google", { method: "POST" });
-    refreshAll();
+    try {
+      await signInWithGoogle();
+      refreshAll();
+    } catch (err) {
+      console.error("SSO Login error:", err);
+    }
   };
+
+  const handleLogout = async () => {
+    try {
+      await signOutUser();
+      setUser(null);
+      refreshAll();
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+  };
+
 
   const handleWhatsAppConnect = async () => {
     await fetch("/api/whatsapp/connect", { method: "POST" });
@@ -501,8 +523,9 @@ export default function App() {
           onClose={() => setShowLoginModal(false)}
           user={user}
           onLogin={handleGoogleLogin}
-          onLogout={() => setUser(null)}
+          onLogout={handleLogout}
         />
+
 
         <WhatsAppConnectSheet
           isOpen={showWhatsAppModal}
