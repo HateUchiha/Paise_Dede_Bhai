@@ -4,12 +4,13 @@ selenium
 qrcode[pil]
 Pillow
 pyperclip
+
+selenium
+qrcode[pil]
+Pillow
+pyperclip
 uvicorn[standard]
 selenium
 qrcode[pil]
 Pillow
 pyperclip
-seleniume
-pip install qrcode[pil]
-pip install Pillow
-pip install pyperclip
