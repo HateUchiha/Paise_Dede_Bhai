@@ -1,0 +1,5 @@
+pip install selenium
+pip install time
+pip install qrcode[pil]
+pip install Pillow
+pip install pyperclip
