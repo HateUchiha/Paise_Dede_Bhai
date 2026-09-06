@@ -67,3 +67,6 @@ tmp/
 # Test files
 test*.py
 *_test.py
+
+.venv/
+debt_history.json

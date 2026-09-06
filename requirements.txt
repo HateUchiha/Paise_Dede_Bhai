@@ -1,5 +1,8 @@
-pip install selenium
-pip install time
-pip install qrcode[pil]
-pip install Pillow
-pip install pyperclip
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+pydantic>=2.0.0
+PyJWT>=2.9.0
+qrcode[pil]
+Pillow
+selenium
+python-dotenv
